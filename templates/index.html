@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}FraudGuard - {{ _('protect_business') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+}
+
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.cta-section {
+    background: #f8f9fa;
+    padding: 80px 0;
+}
+
+.badge-feature {
+    background: #e9ecef;
+    color: #495057;
+    margin: 0.2rem;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Section Hero -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 fw-bold mb-4">{{ _('protect_business') }}</h1>
+                <p class="lead mb-4">{{ _('system_description') }}</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-rocket me-2"></i>{{ _('get_started') }}
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-info-circle me-2"></i>{{ _('learn_more') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistiques -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="stat-number">99.8%</div>
+                <p class="text-muted">{{ _('detection_accuracy') }}</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">24/7</div>
+                <p class="text-muted">{{ _('monitoring') }}</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">&lt;1s</div>
+                <p class="text-muted">{{ _('response_time') }}</p>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">1000+</div>
+                <p class="text-muted">{{ _('fraud_patterns') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fonctionnalités -->
+<section id="features" class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4">{{ _('advanced_features') }}</h2>
+                <p class="lead text-muted">{{ _('system_combines') }}</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Apprentissage Automatique -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-primary">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('machine_learning_ai') }}</h4>
+                        <p class="card-text text-muted">{{ _('ml_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('online_learning_capabilities') }}</span>
+                            <span class="badge badge-feature">{{ _('pattern_recognition') }}</span>
+                            <span class="badge badge-feature">{{ _('anomaly_detection') }}</span>
+                            <span class="badge badge-feature">Deep Learning</span>
+                            <span class="badge badge-feature">Modèles Ensemblistes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surveillance Temps Réel -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-success">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('real_time_monitoring') }}</h4>
+                        <p class="card-text text-muted">{{ _('rt_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('instant_alerts') }}</span>
+                            <span class="badge badge-feature">{{ _('live_dashboards') }}</span>
+                            <span class="badge badge-feature">{{ _('websocket_updates') }}</span>
+                            <span class="badge badge-feature">API Temps Réel</span>
+                            <span class="badge badge-feature">Streaming de Données</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Avancés -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-info">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('advanced_analytics') }}</h4>
+                        <p class="card-text text-muted">{{ _('aa_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('detailed_reports') }}</span>
+                            <span class="badge badge-feature">{{ _('trend_analysis') }}</span>
+                            <span class="badge badge-feature">{{ _('export_capabilities') }}</span>
+                            <span class="badge badge-feature">Analytics Prédictifs</span>
+                            <span class="badge badge-feature">Visualisations Interactives</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertes Multi-canaux -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('multi_channel_alerts') }}</h4>
+                        <p class="card-text text-muted">{{ _('mca_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('email_notifications') }}</span>
+                            <span class="badge badge-feature">{{ _('sms_alerts') }}</span>
+                            <span class="badge badge-feature">{{ _('in_app_notifications') }}</span>
+                            <span class="badge badge-feature">Webhooks</span>
+                            <span class="badge badge-feature">Notifications Push</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traitement par Lots -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-danger">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('batch_processing') }}</h4>
+                        <p class="card-text text-muted">{{ _('bp_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('csv_import') }}</span>
+                            <span class="badge badge-feature">{{ _('bulk_analysis') }}</span>
+                            <span class="badge badge-feature">{{ _('background_processing') }}</span>
+                            <span class="badge badge-feature">Traitement Parallèle</span>
+                            <span class="badge badge-feature">Files d'Attente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Multilingue -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon text-secondary">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h4 class="card-title">{{ _('multilingual_support') }}</h4>
+                        <p class="card-text text-muted">{{ _('ms_description') }}</p>
+                        <div class="mt-3">
+                            <span class="badge badge-feature">{{ _('french_english') }}</span>
+                            <span class="badge badge-feature">{{ _('localized_content') }}</span>
+                            <span class="badge badge-feature">{{ _('cultural_adaptation') }}</span>
+                            <span class="badge badge-feature">Interface Adaptative</span>
+                            <span class="badge badge-feature">Support Unicode</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section CTA -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-6 fw-bold mb-4">{{ _('ready_to_secure') }}</h2>
+                <p class="lead text-muted mb-4">{{ _('join_businesses') }}</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shield-alt me-2"></i>{{ _('start_protection') }}
+                    </a>
+                    <a href="{{ url_for('prediction') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>{{ _('analyze_transactions') }}
+                    </a>
+                </div>
+                <div class="mt-4">
+                    <small class="text-muted">{{ _('free_trial') }} • {{ _('no_credit_card_required') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

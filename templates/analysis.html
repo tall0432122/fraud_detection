@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('analysis') }} - FraudGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-chart-bar me-2"></i>{{ _('advanced_analysis') }}
+        </h1>
+    </div>
+
+    <!-- Métriques principales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="metric-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-white-50">{{ _('total_predictions') }}</h6>
+                        <h3 class="text-white">{{ user_predictions }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-bar fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-white-50">{{ _('fraud_cases') }}</h6>
+                        <h3 class="text-white">{{ user_frauds }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-white-50">{{ _('accuracy_rate') }}</h6>
+                        <h3 class="text-white">
+                            {% if user_predictions > 0 %}
+                                {{ ((user_predictions - user_frauds) / user_predictions * 100)|round(1) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-bullseye fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-white-50">{{ _('status') }}</h6>
+                        <h3 class="text-white">
+                            {% if has_data %}{{ _('active') }}{% else %}{{ _('new') }}{% endif %}
+                        </h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shield-alt fa-2x text-white-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not has_data %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                    <h3>{{ _('no_analysis_data') }}</h3>
+                    <p class="text-muted">
+                        {{ _('start_analyzing_transactions') }}
+                    </p>
+                    <a href="{{ url_for('prediction') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>{{ _('analyze_transactions') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Graphiques -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5>{{ _('fraud_detection_trends') }}</h5>
+                <canvas id="trendChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5>{{ _('prediction_distribution') }}</h5>
+                <canvas id="distributionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analyse des patterns -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5>{{ _('fraud_pattern_detection') }}</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6><i class="fas fa-clock me-2"></i>{{ _('time_patterns') }}</h6>
+                                <p class="text-muted">{{ _('fraud_activity_by_hour') }}</p>
+                                <canvas id="timePatternChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6><i class="fas fa-money-bill-wave me-2"></i>{{ _('risk_amounts') }}</h6>
+                                <p class="text-muted">{{ _('fraud_amount_distribution') }}</p>
+                                <canvas id="amountPatternChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6><i class="fas fa-map-marker-alt me-2"></i>{{ _('geographic_areas') }}</h6>
+                                <p class="text-muted">{{ _('risk_by_region') }}</p>
+                                <canvas id="geoPatternChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialisation des graphiques
+document.addEventListener('DOMContentLoaded', function() {
+    {% if has_data %}
+    // Graphique de tendance
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['{{ _("mon") }}', '{{ _("tue") }}', '{{ _("wed") }}', '{{ _("thu") }}', '{{ _("fri") }}', '{{ _("sat") }}', '{{ _("sun") }}'],
+                datasets: [{
+                    label: '{{ _("normal_transactions") }}',
+                    data: [45, 52, 48, 55, 50, 53, 49],
+                    borderColor: 'rgb(40, 167, 69)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: '{{ _("suspicious_transactions") }}',
+                    data: [5, 8, 3, 6, 4, 7, 5],
+                    borderColor: 'rgb(220, 53, 69)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Graphique de distribution
+    const distributionCtx = document.getElementById('distributionChart');
+    if (distributionCtx) {
+        new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['{{ _("secure") }}', '{{ _("suspicious") }}', '{{ _("to_verify") }}'],
+                datasets: [{
+                    data: [70, 15, 15],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)'
+                    ]
+                }]
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

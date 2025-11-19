@@ -1,0 +1,117 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+            <i class="fas fa-shield-alt me-2"></i>FraudGuard
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">
+                        <i class="fas fa-home me-1"></i>{{ _('home') }}
+                    </a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">
+                        <i class="fas fa-tachometer-alt me-1"></i>{{ _('dashboard') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('prediction') }}">
+                        <i class="fas fa-search me-1"></i>{{ _('detection') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('advanced_analysis') }}">
+                        <i class="fas fa-chart-bar me-1"></i>{{ _('analysis') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('reports_dashboard') }}">
+                        <i class="fas fa-file-alt me-1"></i>{{ _('reports') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('batch_prediction') }}">
+                        <i class="fas fa-upload me-1"></i>{{ _('batch_analysis') }}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <ul class="navbar-nav">
+                <!-- Sélecteur de langue -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-language me-1"></i>
+                        {% if get_locale() == 'fr' %}Français{% else %}English{% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('set_language', language='fr') }}">
+                                <i class="fas fa-flag me-2"></i>Français
+                                {% if get_locale() == 'fr' %}<i class="fas fa-check text-success ms-2"></i>{% endif %}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('set_language', language='en') }}">
+                                <i class="fas fa-flag-usa me-2"></i>English
+                                {% if get_locale() == 'en' %}<i class="fas fa-check text-success ms-2"></i>{% endif %}
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                {% if current_user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
+                        {% if current_user.is_admin %}<span class="badge bg-warning ms-1">Admin</span>{% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('user_profile') }}">
+                                <i class="fas fa-user me-2"></i>{{ _('profile') }}
+                            </a>
+                        </li>
+                        {% if current_user.is_admin %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+                                <i class="fas fa-crown me-2"></i>{{ _('admin_panel') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('train_model') }}">
+                                <i class="fas fa-brain me-2"></i>{{ _('train_model') }}
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>{{ _('logout') }}
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login') }}">
+                        <i class="fas fa-sign-in-alt me-1"></i>{{ _('login') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register') }}">
+                        <i class="fas fa-user-plus me-1"></i>{{ _('register') }}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

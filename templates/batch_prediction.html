@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('batch_analysis') }} - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-upload me-2"></i>{{ _('batch_analysis') }}
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-csv me-2"></i>{{ _('import_csv_file') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="csv_file" class="form-label">{{ _('select_csv_file') }}</label>
+                            <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                            <div class="form-text">
+                                {{ _('expected_format') }}: {{ _('columns_amount_features') }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>{{ _('analyze_file') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Exemple de format -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>{{ _('expected_file_format') }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>{{ _('your_csv_must_contain') }}:</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('column') }}</th>
+                                    <th>{{ _('description') }}</th>
+                                    <th>{{ _('example') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>amount</code></td>
+                                    <td>{{ _('transaction_amount') }}</td>
+                                    <td>150.75</td>
+                                </tr>
+                                {% for i in range(1, 14) %}
+                                <tr>
+                                    <td><code>feature_{{ i }}</code></td>
+                                    <td>{{ _('feature') }} {{ i }}</td>
+                                    <td>{{ [0.1234, -0.5678, 0.9012, -0.3456, 0.7890, -0.1234, 0.5678, -0.9012, 0.3456, -0.7890, 0.1234, -0.5678, 0.9012][i-1] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('static', filename='sample_data.csv') }}" class="btn btn-outline-primary btn-sm" download>
+                            <i class="fas fa-download me-2"></i>{{ _('download_example') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>{{ _('analysis_tips') }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {{ _('standard_csv_format') }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {{ _('max_transactions_per_file') }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {{ _('analysis_time_per_transaction') }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {{ _('exportable_results') }}
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>{{ _('tip') }}:</strong> {{ _('features_tip') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques rapides -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>{{ _('recent_statistics') }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ current_user.predictions|length if current_user.predictions else 0 }}</h4>
+                            <small class="text-muted">{{ _('analysis') }}</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ current_user.predictions|selectattr('prediction', 'equalto', 'Non Fraude')|list|length if current_user.predictions else 0 }}</h4>
+                            <small class="text-muted">{{ _('secure') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

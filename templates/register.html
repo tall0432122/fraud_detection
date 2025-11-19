@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('register') }} - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                        <h2 class="card-title">{{ _('create_account') }}</h2>
+                        <p class="text-muted">{{ _('join_fraudguard') }}</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">{{ _('username') }} *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           required placeholder="{{ _('choose_username') }}">
+                                </div>
+                                <div class="form-text">{{ _('username_requirements') }}</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">{{ _('email') }} *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           required placeholder="{{ _('your_email') }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">{{ _('password') }} *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           required placeholder="{{ _('create_password') }}">
+                                </div>
+                                <div class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" id="passwordStrength" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted" id="passwordFeedback"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">{{ _('confirm_password') }} *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                           required placeholder="{{ _('repeat_password') }}">
+                                </div>
+                                <div class="form-text" id="passwordMatch"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">{{ _('phone_number') }} ({{ _('optional') }})</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       placeholder="+33 1 23 45 67 89">
+                            </div>
+                            <div class="form-text">{{ _('phone_usage') }}</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    {{ _('accept_terms') }}
+                                    <a href="#" class="text-decoration-none">{{ _('terms_of_use') }}</a> 
+                                    {{ _('and') }}
+                                    <a href="#" class="text-decoration-none">{{ _('privacy_policy') }}</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="registerBtn">
+                                <i class="fas fa-user-plus me-2"></i>{{ _('create_account_btn') }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            {{ _('have_account') }}
+                            <a href="{{ url_for('login') }}" class="text-decoration-none">
+                                {{ _('login_here') }}
+                            </a>
+                        </p>
+                    </div>
+
+                    <!-- Messages flash -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show mt-4" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas 
+                                            {% if category == 'success' %}fa-check-circle
+                                            {% elif category == 'danger' %}fa-exclamation-circle
+                                            {% elif category == 'warning' %}fa-exclamation-triangle
+                                            {% else %}fa-info-circle{% endif %}
+                                            me-2"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthFeedback = document.getElementById('passwordFeedback');
+    const matchFeedback = document.getElementById('passwordMatch');
+    const registerBtn = document.getElementById('registerBtn');
+
+    function checkPasswordStrength(pass) {
+        let strength = 0;
+        let feedback = '';
+
+        if (pass.length >= 8) strength += 25;
+        if (pass.match(/[a-z]/)) strength += 25;
+        if (pass.match(/[A-Z]/)) strength += 25;
+        if (pass.match(/[0-9]/)) strength += 25;
+
+        strengthBar.style.width = strength + '%';
+        
+        if (strength < 50) {
+            strengthBar.className = 'progress-bar bg-danger';
+            feedback = '{{ _("weak_password") }}';
+        } else if (strength < 75) {
+            strengthBar.className = 'progress-bar bg-warning';
+            feedback = '{{ _("medium_strength") }}';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            feedback = '{{ _("strong_password") }}';
+        }
+
+        strengthFeedback.textContent = feedback;
+    }
+
+    function checkPasswordMatch() {
+        if (confirmPassword.value === '') {
+            matchFeedback.textContent = '';
+            matchFeedback.className = 'form-text';
+        } else if (password.value === confirmPassword.value) {
+            matchFeedback.textContent = '{{ _("passwords_match") }}';
+            matchFeedback.className = 'form-text text-success';
+        } else {
+            matchFeedback.textContent = '{{ _("passwords_dont_match") }}';
+            matchFeedback.className = 'form-text text-danger';
+        }
+    }
+
+    password.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+        checkPasswordMatch();
+    });
+
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+
+    // Validation du formulaire avant soumission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (password.value !== confirmPassword.value) {
+            e.preventDefault();
+            alert('{{ _("passwords_dont_match_alert") }}');
+            return false;
+        }
+
+        if (!document.getElementById('terms').checked) {
+            e.preventDefault();
+            alert('{{ _("accept_terms_alert") }}');
+            return false;
+        }
+    });
+});
+</script>
+
+<style>
+.card {
+    border-radius: 15px;
+    border: none;
+}
+
+.card-body {
+    padding: 2.5rem;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #1f618d);
+    transform: translateY(-1px);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+</style>
+{% endblock %}

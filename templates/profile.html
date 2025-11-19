@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Mon Profil
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Informations du profil -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>Informations Personnelles</h5>
+                            <p class="text-muted">Gérez vos informations de compte</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-{% if current_user.is_admin %}danger{% else %}primary{% endif %}">
+                                {% if current_user.is_admin %}Administrateur{% else %}Utilisateur{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom d'utilisateur</label>
+                            <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                            <div class="form-text">Votre nom d'utilisateur ne peut pas être modifié</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Adresse Email</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Numéro de téléphone</label>
+                        <input type="text" class="form-control" value="{{ current_user.phone or 'Non renseigné' }}" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date d'inscription</label>
+                        <input type="text" class="form-control" 
+                               value="{{ current_user.created_at.strftime('%d/%m/%Y à %H:%M') }}" readonly>
+                    </div>
+
+                    <!-- Statistiques du compte -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h5>Statistiques du Compte</h5>
+                            <p class="text-muted">Votre activité sur FraudGuard</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-primary">{{ total_predictions }}</h6>
+                                    <small class="text-muted">Prédictions Total</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-success">{{ safe_predictions }}</h6>
+                                    <small class="text-muted">Transactions Sûres</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-danger">{{ fraud_predictions }}</h6>
+                                    <small class="text-muted">Fraudes Détectées</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-info">{{ account_age }} jours</h6>
+                                    <small class="text-muted">Âge du Compte</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activité Récente -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>Activité Récente</h6>
+                            <div class="list-group">
+                                {% if recent_predictions %}
+                                    {% for pred in recent_predictions %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Analyse de transaction</h6>
+                                            <small class="text-muted">{{ pred.created_at.strftime('%H:%M') }}</small>
+                                        </div>
+                                        <p class="mb-1">
+                                            Montant: <strong>{{ pred.amount }} {{ pred.currency }}</strong> - 
+                                            Résultat: 
+                                            <span class="badge bg-{{ 'danger' if pred.prediction == 'Fraude' else 'success' }}">
+                                                {{ pred.prediction }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="list-group-item">
+                                        <p class="text-muted text-center mb-0">Aucune activité récente</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Sécurité -->
+            <div class="card border-warning mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Sécurité du Compte
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6>Changer le Mot de Passe</h6>
+                            <p class="text-muted mb-0">
+                                Mettez à jour votre mot de passe régulièrement pour maintenir la sécurité de votre compte.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="fas fa-key me-2"></i>Changer le Mot de Passe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Changement de Mot de Passe -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Changer le Mot de Passe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Mot de Passe Actuel</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Nouveau Mot de Passe</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirmer le Nouveau Mot de Passe</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-warning" onclick="changePassword()">
+                    <i class="fas fa-save me-2"></i>Mettre à Jour
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Veuillez remplir tous les champs');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert('Les mots de passe ne correspondent pas');
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        alert('Le mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+
+    // Simulation de changement de mot de passe
+    alert('Mot de passe changé avec succès');
+    $('#changePasswordModal').modal('hide');
+    document.getElementById('passwordForm').reset();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('login') }} - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                        <h2 class="card-title">{{ _('welcome_back') }}</h2>
+                        <p class="text-muted">{{ _('login_to_account') }}</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">{{ _('username') }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       required placeholder="{{ _('enter_username') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">{{ _('password') }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       required placeholder="{{ _('enter_password') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">
+                                {{ _('remember_me') }}
+                            </label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>{{ _('sign_in') }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            {{ _('no_account') }}
+                            <a href="{{ url_for('register') }}" class="text-decoration-none">
+                                {{ _('register_here') }}
+                            </a>
+                        </p>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            {{ _('login_terms') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identifiants de démonstration -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">{{ _('demo_credentials') }} :</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <small><strong>{{ _('administrator') }} :</strong></small><br>
+                            <small>{{ _('username') }} : admin</small><br>
+                            <small>{{ _('password') }} : admin123</small>
+                        </div>
+                        <div class="col-6">
+                            <small><strong>{{ _('user') }} :</strong></small><br>
+                            <small>{{ _('username') }} : demo</small><br>
+                            <small>{{ _('password') }} : demo123</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show mt-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas 
+                                    {% if category == 'success' %}fa-check-circle
+                                    {% elif category == 'danger' %}fa-exclamation-circle
+                                    {% elif category == 'warning' %}fa-exclamation-triangle
+                                    {% else %}fa-info-circle{% endif %}
+                                    me-2"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+    border: none;
+}
+
+.card-body {
+    padding: 2.5rem;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #1f618d);
+    transform: translateY(-1px);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+</style>
+{% endblock %}

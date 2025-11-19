@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('reports') }} - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-file-alt me-2"></i>{{ _('reports_analytics') }}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="generateCustomReport()">
+                    <i class="fas fa-plus me-1"></i>{{ _('custom_report') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes de rapports rapides -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-pdf fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">{{ _('pdf_report') }}</h5>
+                    <p class="card-text text-muted">{{ _('complete_report_with_charts') }}</p>
+                    <a href="{{ url_for('generate_report', report_type='pdf') }}" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i>{{ _('generate_pdf') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">{{ _('excel_report') }}</h5>
+                    <p class="card-text text-muted">{{ _('detailed_spreadsheet_with_raw_data') }}</p>
+                    <a href="{{ url_for('generate_report', report_type='excel') }}" class="btn btn-success">
+                        <i class="fas fa-download me-2"></i>{{ _('generate_excel') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">{{ _('performance_report') }}</h5>
+                    <p class="card-text text-muted">{{ _('model_performance_metrics') }}</p>
+                    <button type="button" class="btn btn-info" onclick="generatePerformanceReport()">
+                        <i class="fas fa-chart-line me-2"></i>{{ _('generate') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">{{ _('scheduled_reports') }}</h5>
+                    <p class="card-text text-muted">{{ _('automated_email_reports') }}</p>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+                        <i class="fas fa-cog me-2"></i>{{ _('configure') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des rapports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>{{ _('report_history') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('report_name') }}</th>
+                                    <th>{{ _('type') }}</th>
+                                    <th>{{ _('generated_on') }}</th>
+                                    <th>{{ _('size') }}</th>
+                                    <th>{{ _('actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ _('monthly_fraud_analysis') }}</td>
+                                    <td><span class="badge bg-primary">PDF</span></td>
+                                    <td>{{ _('today_at') }} 10:30</td>
+                                    <td>2.4 MB</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ _('transaction_details') }}</td>
+                                    <td><span class="badge bg-success">Excel</span></td>
+                                    <td>{{ _('yesterday_at') }} 15:45</td>
+                                    <td>1.8 MB</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Programmation -->
+<div class="modal fade" id="scheduleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-clock me-2"></i>{{ _('schedule_automated_reports') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _('frequency') }}</label>
+                            <select class="form-select" name="frequency">
+                                <option value="daily">{{ _('daily') }}</option>
+                                <option value="weekly" selected>{{ _('weekly') }}</option>
+                                <option value="monthly">{{ _('monthly') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _('send_time') }}</label>
+                            <input type="time" class="form-control" name="time" value="09:00">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ _('report_format') }}</label>
+                        <select class="form-select" name="format">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="scheduleActive" checked>
+                        <label class="form-check-label" for="scheduleActive">
+                            {{ _('enable_scheduled_reports') }}
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('cancel') }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveSchedule()">
+                    <i class="fas fa-save me-2"></i>{{ _('save') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function generateCustomReport() {
+    alert('{{ _("custom_report_generation") }}');
+    // Implémentation à venir
+}
+
+function generatePerformanceReport() {
+    alert('{{ _("performance_report_generation") }}');
+    // Implémentation à venir
+}
+
+function saveSchedule() {
+    alert('{{ _("schedule_saved") }}');
+    $('#scheduleModal').modal('hide');
+}
+</script>
+{% endblock %}

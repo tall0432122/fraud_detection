@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Modèles - FraudGuard Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-brain me-2"></i>Gestion des Modèles
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-success" onclick="trainNewModel()">
+                    <i class="fas fa-plus me-1"></i>Entraîner un Nouveau Modèle
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshModels()">
+                    <i class="fas fa-sync-alt me-1"></i>Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statut du Modèle Actuel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-rocket me-2"></i>Statut du Modèle Actif
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="model-status status-online p-3 rounded bg-success text-white">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h5>En Ligne</h5>
+                                <small>Le modèle est actif et sert des prédictions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3">
+                                <h3 class="text-primary">98.2%</h3>
+                                <small class="text-muted">Précision</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3">
+                                <h3 class="text-success">96.8%</h3>
+                                <small class="text-muted">Rappel</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3">
+                                <h3 class="text-info">95.5%</h3>
+                                <small class="text-muted">Score F1</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des Performances -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Historique des Performances des Modèles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom du Modèle</th>
+                                    <th>Type</th>
+                                    <th>Précision</th>
+                                    <th>Rappel</th>
+                                    <th>Score F1</th>
+                                    <th>Date d'Entraînement</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for model in models %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ model.model_name }}</div>
+                                        <small class="text-muted">Version {{ loop.index }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">Random Forest</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold {% if model.accuracy > 0.95 %}text-success{% elif model.accuracy > 0.9 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ (model.accuracy * 100)|round(2) }}%
+                                        </div>
+                                    </td>
+                                    <td>{{ (model.precision * 100)|round(2) if model.precision else 'N/A' }}%</td>
+                                    <td>{{ (model.recall * 100)|round(2) if model.recall else 'N/A' }}%</td>
+                                    <td>{{ (model.f1_score * 100)|round(2) if model.f1_score else 'N/A' }}%</td>
+                                    <td>
+                                        <small>{{ model.training_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </td>
+                                    <td>
+                                        {% if model.is_active %}
+                                        <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if not model.is_active %}
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    onclick="activateModel({{ model.id }})"
+                                                    title="Activer le Modèle">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    onclick="evaluateModel({{ model.id }})"
+                                                    title="Évaluer le Modèle">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    onclick="viewModelDetails({{ model.id }})"
+                                                    title="Voir les Détails">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                            {% if not model.is_active %}
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="deleteModel({{ model.id }})"
+                                                    title="Supprimer le Modèle">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Aucun modèle entraîné</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration d'Entraînement -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>Configuration d'Entraînement du Modèle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="trainingConfigForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="modelType" class="form-label">Type de Modèle</label>
+                                <select class="form-select" id="modelType" name="model_type">
+                                    <option value="random_forest">Random Forest</option>
+                                    <option value="gradient_boosting">Gradient Boosting</option>
+                                    <option value="logistic_regression">Régression Logistique</option>
+                                    <option value="neural_network">Réseau de Neurones</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="trainingData" class="form-label">Données d'Entraînement</label>
+                                <select class="form-select" id="trainingData" name="training_data">
+                                    <option value="full_dataset">Dataset Complet (2266 échantillons)</option>
+                                    <option value="recent_data">Données Récentes Seulement</option>
+                                    <option value="custom_range">Plage de Dates Personnalisée</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="testSize" class="form-label">Taille du Jeu de Test</label>
+                                <select class="form-select" id="testSize" name="test_size">
+                                    <option value="0.2">20%</option>
+                                    <option value="0.3" selected>30%</option>
+                                    <option value="0.4">40%</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="autoActivate" checked>
+                            <label class="form-check-label" for="autoActivate">
+                                Activer automatiquement si la performance s'améliore
+                            </label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-play me-2"></i>Commencer l'Entraînement
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Progression de l'Entraînement -->
+                    <div id="trainingProgress" class="mt-4" style="display: none;">
+                        <h6>Progression de l'Entraînement</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-center">
+                            <small class="text-muted" id="progressText">Initialisation...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function trainNewModel() {
+    document.getElementById('trainingConfigForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function refreshModels() {
+    showAlert('Liste des modèles actualisée', 'info');
+}
+
+function activateModel(modelId) {
+    if (confirm('Êtes-vous sûr de vouloir activer ce modèle ? Cela remplacera le modèle actuellement actif.')) {
+        showAlert('Modèle activé avec succès', 'success');
+    }
+}
+
+function evaluateModel(modelId) {
+    showAlert(`Évaluation du modèle ${modelId} en cours...`, 'info');
+}
+
+function viewModelDetails(modelId) {
+    showAlert(`Affichage des détails pour le modèle ${modelId}`, 'info');
+}
+
+function deleteModel(modelId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible.')) {
+        showAlert('Modèle supprimé avec succès', 'success');
+    }
+}
+
+// Soumission du formulaire d'entraînement
+document.getElementById('trainingConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const trainingConfig = {
+        model_type: document.getElementById('modelType').value,
+        training_data: document.getElementById('trainingData').value,
+        test_size: parseFloat(document.getElementById('testSize').value),
+        auto_activate: document.getElementById('autoActivate').checked
+    };
+
+    startModelTraining(trainingConfig);
+});
+
+function startModelTraining(config) {
+    const progressBar = document.querySelector('#trainingProgress .progress-bar');
+    const progressText = document.getElementById('progressText');
+    const progressDiv = document.getElementById('trainingProgress');
+    
+    progressDiv.style.display = 'block';
+    let progress = 0;
+    
+    const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            progressText.textContent = 'Entraînement terminé !';
+            showAlert('Entraînement du modèle terminé avec succès', 'success');
+        } else {
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Entraînement en cours: ${Math.round(progress)}%`;
+        }
+    }, 500);
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss après 5 secondes
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 5000);
+}
+</script>
+
+<style>
+.model-status {
+    border-radius: 10px;
+}
+.status-online {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+</style>
+{% endblock %}

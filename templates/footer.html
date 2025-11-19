@@ -1,0 +1,66 @@
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="fw-bold">
+                    <i class="fas fa-shield-alt me-2"></i>FraudGuard
+                </h5>
+                <p class="text-muted mb-0">
+                    Système intelligent de détection de fraude bancaire utilisant l'IA.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="text-muted mb-0">
+                    <strong>Master 1 DSGL</strong><br>
+                    Université Alloune Diop de Bambey<br>
+                    &copy; 2024 Tous droits réservés
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+3. Corriger la route batch_prediction
+Dans votre app.py, modifiez la route batch_prediction :
+
+python
+@app.route('/batch-prediction', methods=['GET', 'POST'])
+@login_required
+def batch_prediction():
+    """Analyse par lots avec fichier CSV"""
+    if request.method == 'POST':
+        try:
+            if 'csv_file' not in request.files:
+                flash('Aucun fichier sélectionné', 'error')
+                return redirect(url_for('batch_prediction'))
+            
+            file = request.files['csv_file']
+            if file.filename == '':
+                flash('Aucun fichier sélectionné', 'error')
+                return redirect(url_for('batch_prediction'))
+            
+            if file and file.filename.endswith('.csv'):
+                # Lire le fichier CSV
+                df = pd.read_csv(file)
+                
+                # Simulation d'analyse
+                results = []
+                for index, row in df.iterrows():
+                    is_fraud = np.random.choice([True, False], p=[0.15, 0.85])
+                    confidence = np.random.uniform(0.7, 0.99) if is_fraud else np.random.uniform(0.8, 0.95)
+                    
+                    results.append({
+                        'transaction_id': index + 1,
+                        'amount': row.get('amount', 0) if 'amount' in row else np.random.uniform(10, 1000),
+                        'prediction': 'Fraude' if is_fraud else 'Sécurisé',
+                        'confidence': confidence
+                    })
+                
+                return render_template('batch_results.html', results=results)
+            else:
+                flash('Veuillez sélectionner un fichier CSV', 'error')
+                
+        except Exception as e:
+            flash(f'Erreur lors du traitement du fichier: {str(e)}', 'error')
+            logger.error(f"Erreur analyse par lots: {str(e)}")
+    
+    return render_template('batch_prediction.html')

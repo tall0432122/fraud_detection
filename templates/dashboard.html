@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('dashboard') }} - FraudGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    transition: transform 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.alert-item {
+    border-left: 4px solid;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.alert-high { border-left-color: #e74a3b; }
+.alert-medium { border-left-color: #f6c23e; }
+.alert-low { border-left-color: #36b9cc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-tachometer-alt me-2"></i>{{ _('dashboard') }}
+                </h1>
+                <span class="text-muted">
+                    <i class="fas fa-user me-1"></i>{{ _('welcome') }}, <strong>{{ current_user.username }}</strong>
+                    {% if current_user.is_admin %}
+                    <span class="badge bg-warning ms-2">{{ _('administrator') }}</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes de Statistiques Utilisateur -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                {{ _('total_predictions') }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ user_predictions }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-bar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                {{ _('fraud_cases') }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ user_frauds }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                {{ _('fraud_rate') }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if user_predictions > 0 %}
+                                    {{ (user_frauds / user_predictions * 100) | round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                {{ _('status') }}
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                {% if user_predictions > 0 %}
+                                    {{ _('active') }}
+                                {% else %}
+                                    {{ _('new') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics en Temps Réel -->
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ _('real_time_analytics') }}</h6>
+                    <span class="badge bg-success">LIVE</span>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-right">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    {{ _('today_transactions') }}
+                                </div>
+                                <div class="h5 mb-0 text-gray-800" id="transactionsToday">{{ user_predictions }}</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-right">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    {{ _('fraud_detected') }}
+                                </div>
+                                <div class="h5 mb-0 text-gray-800" id="fraudDetected">{{ user_frauds }}</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                {{ _('alert_rate') }}
+                            </div>
+                            <div class="h5 mb-0 text-gray-800" id="alertRate">
+                                {% if user_predictions > 0 %}
+                                    {{ (user_frauds / user_predictions * 100) | round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <canvas id="realtimeChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dernières Alertes -->
+        <div class="col-xl-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ _('recent_alerts') }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert-list" id="alertList">
+                        {% if recent_alerts %}
+                            {% for alert in recent_alerts %}
+                            <div class="alert-item alert-{{ alert.severity }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ alert.message }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ alert.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-{{ 'danger' if alert.severity == 'high' else 'warning' if alert.severity == 'medium' else 'info' }}">
+                                        {{ alert.severity|upper }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">{{ _('no_recent_alerts') }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières Prédictions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ _('recent_predictions') }}</h6>
+                    <a href="{{ url_for('prediction') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>{{ _('new_analysis') }}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_predictions %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>{{ _('date') }}</th>
+                                        <th>{{ _('amount') }}</th>
+                                        <th>{{ _('result') }}</th>
+                                        <th>{{ _('confidence') }}</th>
+                                        <th>{{ _('status') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pred in recent_predictions %}
+                                    <tr>
+                                        <td>{{ pred.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                        <td>
+                                            <strong>{{ pred.amount }} {{ pred.currency }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if pred.prediction == 'Fraude' else 'success' }}">
+                                                {{ _(pred.prediction.lower().replace(' ', '_')) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                    <div class="progress-bar bg-{{ 'danger' if pred.prediction == 'Fraude' else 'success' }}" 
+                                                         style="width: {{ pred.confidence * 100 }}%"></div>
+                                                </div>
+                                                <span class="fw-bold">{{ (pred.confidence * 100) | round(1) }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if pred.is_fraud_confirmed is none %}
+                                                <span class="badge bg-secondary">{{ _('pending') }}</span>
+                                            {% elif pred.is_fraud_confirmed %}
+                                                <span class="badge bg-danger">{{ _('confirmed') }}</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ _('validated') }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">{{ _('no_predictions_yet') }}</h5>
+                            <p class="text-muted mb-4">{{ _('start_analyzing') }}</p>
+                            <a href="{{ url_for('prediction') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>{{ _('start_detection') }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Administrateur -->
+    {% if current_user.is_admin %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-header py-3 bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-crown me-2"></i>{{ _('admin_panel') }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                                    <h5 class="card-title">{{ _('users') }}</h5>
+                                    <p class="card-text">{{ total_users }} {{ _('registered_users') }}</p>
+                                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary btn-sm">
+                                        {{ _('manage_users') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <i class="fas fa-brain fa-2x text-success mb-3"></i>
+                                    <h5 class="card-title">{{ _('models') }}</h5>
+                                    <p class="card-text">{{ model_performance|length }} {{ _('trained_models') }}</p>
+                                    <a href="{{ url_for('admin_models') }}" class="btn btn-outline-success btn-sm">
+                                        {{ _('view_models') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                                    <h5 class="card-title">{{ _('statistics') }}</h5>
+                                    <p class="card-text">{{ total_predictions }} {{ _('total_analysis') }}</p>
+                                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-info btn-sm">
+                                        {{ _('admin_dashboard') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique en temps réel simplifié
+    const ctx = document.getElementById('realtimeChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['{{ _("mon") }}', '{{ _("tue") }}', '{{ _("wed") }}', '{{ _("thu") }}', '{{ _("fri") }}', '{{ _("sat") }}', '{{ _("sun") }}'],
+                datasets: [{
+                    label: '{{ _("transactions") }}',
+                    data: [12, 19, 8, 15, 12, 18, 14],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: '{{ _("alerts") }}',
+                    data: [2, 3, 1, 4, 2, 3, 2],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Mise à jour en temps réel simulée
+    function updateRealTimeStats() {
+        const transactionsElem = document.getElementById('transactionsToday');
+        const fraudElem = document.getElementById('fraudDetected');
+        
+        if (transactionsElem && fraudElem) {
+            // Simulation d'augmentation aléatoire
+            const currentTransactions = parseInt(transactionsElem.textContent) || 0;
+            const currentFraud = parseInt(fraudElem.textContent) || 0;
+            
+            // Petite chance d'ajouter une nouvelle transaction
+            if (Math.random() < 0.3) {
+                transactionsElem.textContent = currentTransactions + 1;
+                
+                // Petite chance que ce soit une fraude
+                if (Math.random() < 0.2) {
+                    fraudElem.textContent = currentFraud + 1;
+                    
+                    // Mettre à jour le taux d'alerte
+                    const alertRateElem = document.getElementById('alertRate');
+                    if (alertRateElem) {
+                        const newTransactions = currentTransactions + 1;
+                        const newFraud = currentFraud + 1;
+                        const newRate = (newFraud / newTransactions * 100).toFixed(1);
+                        alertRateElem.textContent = newRate + '%';
+                    }
+                }
+            }
+        }
+    }
+
+    // Mettre à jour toutes les 10 secondes
+    setInterval(updateRealTimeStats, 10000);
+});
+</script>
+{% endblock %}

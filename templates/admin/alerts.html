@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}Alert System - FraudDetect Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-bell me-2"></i>{% trans %}Alert System Management{% endtrans %}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshAlerts()">
+                    <i class="fas fa-sync-alt me-1"></i>{% trans %}Refresh{% endtrans %}
+                </button>
+                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createAlertModal">
+                    <i class="fas fa-plus me-1"></i>{% trans %}Create Alert{% endtrans %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-50">{% trans %}Total Alerts{% endtrans %}</h6>
+                            <h3 class="text-white" id="totalAlerts">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bell fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-50">{% trans %}Sent Today{% endtrans %}</h6>
+                            <h3 class="text-white" id="sentToday">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-paper-plane fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-50">{% trans %}High Priority{% endtrans %}</h6>
+                            <h3 class="text-white" id="highPriority">0</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-white-50">{% trans %}Delivery Rate{% endtrans %}</h6>
+                            <h3 class="text-white" id="deliveryRate">0%</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Configuration -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>{% trans %}Alert Configuration{% endtrans %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="alertConfigForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{% trans %}Alert Channels{% endtrans %}</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
+                                    <label class="form-check-label" for="emailAlerts">
+                                        {% trans %}Email Alerts{% endtrans %}
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="smsAlerts">
+                                    <label class="form-check-label" for="smsAlerts">
+                                        {% trans %}SMS Alerts{% endtrans %}
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="pushAlerts">
+                                    <label class="form-check-label" for="pushAlerts">
+                                        {% trans %}Push Notifications{% endtrans %}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="fraudThreshold" class="form-label">{% trans %}Fraud Confidence Threshold{% endtrans %}</label>
+                                <input type="range" class="form-range" id="fraudThreshold" min="50" max="95" value="80">
+                                <div class="text-center">
+                                    <span id="thresholdValue" class="fw-bold">80%</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="alertFrequency" class="form-label">{% trans %}Alert Frequency{% endtrans %}</label>
+                                <select class="form-select" id="alertFrequency">
+                                    <option value="immediate">{% trans %}Immediate{% endtrans %}</option>
+                                    <option value="batch_5min" selected>{% trans %}Batch every 5 minutes{% endtrans %}</option>
+                                    <option value="batch_15min">{% trans %}Batch every 15 minutes{% endtrans %}</option>
+                                    <option value="batch_1hour">{% trans %}Batch every hour{% endtrans %}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="form-label">{% trans %}Alert Templates{% endtrans %}</label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>{% trans %}High Risk Fraud{% endtrans %}</h6>
+                                                <textarea class="form-control small" rows="3" id="highRiskTemplate">
+🚨 HIGH RISK FRAUD DETECTED
+Transaction: {amount} {currency}
+Confidence: {confidence}%
+Time: {timestamp}
+Action: IMMEDIATE REVIEW REQUIRED
+                                                </textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>{% trans %}Medium Risk{% endtrans %}</h6>
+                                                <textarea class="form-control small" rows="3" id="mediumRiskTemplate">
+⚠️ SUSPICIOUS TRANSACTION
+Transaction: {amount} {currency}
+Confidence: {confidence}%
+Time: {timestamp}
+Action: Review when possible
+                                                </textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>{% trans %}System Alert{% endtrans %}</h6>
+                                                <textarea class="form-control small" rows="3" id="systemAlertTemplate">
+🔔 SYSTEM NOTIFICATION
+Message: {message}
+Time: {timestamp}
+Priority: {priority}
+                                                </textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{% trans %}Save Configuration{% endtrans %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>{% trans %}Recent Alerts{% endtrans %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{% trans %}Time{% endtrans %}</th>
+                                    <th>{% trans %}User{% endtrans %}</th>
+                                    <th>{% trans %}Type{% endtrans %}</th>
+                                    <th>{% trans %}Message{% endtrans %}</th>
+                                    <th>{% trans %}Severity{% endtrans %}</th>
+                                    <th>{% trans %}Status{% endtrans %}</th>
+                                    <th>{% trans %}Actions{% endtrans %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertsTable">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Logs -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list-alt me-2"></i>{% trans %}Alert Delivery Logs{% endtrans %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert-log" id="alertLogs">
+                        <!-- Alert logs will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Alert Modal -->
+<div class="modal fade" id="createAlertModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>{% trans %}Create Manual Alert{% endtrans %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createAlertForm">
+                    <div class="mb-3">
+                        <label for="alertUsers" class="form-label">{% trans %}Target Users{% endtrans %}</label>
+                        <select class="form-select" id="alertUsers" multiple>
+                            <option value="all">{% trans %}All Users{% endtrans %}</option>
+                            <option value="admins">{% trans %}Administrators Only{% endtrans %}</option>
+                            <option value="specific">{% trans %}Specific Users{% endtrans %}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="alertSeverity" class="form-label">{% trans %}Severity{% endtrans %}</label>
+                        <select class="form-select" id="alertSeverity">
+                            <option value="low">{% trans %}Low{% endtrans %}</option>
+                            <option value="medium">{% trans %}Medium{% endtrans %}</option>
+                            <option value="high">{% trans %}High{% endtrans %}</option>
+                            <option value="critical">{% trans %}Critical{% endtrans %}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="alertChannels" class="form-label">{% trans %}Delivery Channels{% endtrans %}</label>
+                        <select class="form-select" id="alertChannels" multiple>
+                            <option value="email">{% trans %}Email{% endtrans %}</option>
+                            <option value="sms">{% trans %}SMS{% endtrans %}</option>
+                            <option value="in_app">{% trans %}In-App Notification{% endtrans %}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="alertMessage" class="form-label">{% trans %}Message{% endtrans %}</label>
+                        <textarea class="form-control" id="alertMessage" rows="4" 
+                                  placeholder="{% trans %}Enter alert message...{% endtrans %}"></textarea>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="immediateDelivery" checked>
+                        <label class="form-check-label" for="immediateDelivery">
+                            {% trans %}Deliver immediately{% endtrans %}
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {% trans %}Cancel{% endtrans %}
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendManualAlert()">
+                    <i class="fas fa-paper-plane me-2"></i>{% trans %}Send Alert{% endtrans %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize alert system
+document.addEventListener('DOMContentLoaded', function() {
+    loadAlertStatistics();
+    loadRecentAlerts();
+    loadAlertLogs();
+    setupAlertConfiguration();
+});
+
+function loadAlertStatistics() {
+    // Simulate loading statistics
+    document.getElementById('totalAlerts').textContent = '1,247';
+    document.getElementById('sentToday').textContent = '23';
+    document.getElementById('highPriority').textContent = '8';
+    document.getElementById('deliveryRate').textContent = '98.5%';
+}
+
+function loadRecentAlerts() {
+    const alerts = [
+        {
+            time: '2024-01-15 14:30:25',
+            user: 'john_doe',
+            type: 'Fraud Detection',
+            message: 'High confidence fraud detected - Transaction $1,250.00',
+            severity: 'high',
+            status: 'delivered'
+        },
+        {
+            time: '2024-01-15 14:25:10',
+            user: 'system',
+            type: 'System',
+            message: 'Model performance below threshold',
+            severity: 'medium',
+            status: 'delivered'
+        },
+        {
+            time: '2024-01-15 14:15:45',
+            user: 'jane_smith',
+            type: 'Fraud Detection',
+            message: 'Suspicious transaction pattern detected',
+            severity: 'medium',
+            status: 'pending'
+        }
+    ];
+
+    const tableBody = document.getElementById('alertsTable');
+    tableBody.innerHTML = alerts.map(alert => `
+        <tr>
+            <td><small>${alert.time}</small></td>
+            <td>${alert.user}</td>
+            <td>${alert.type}</td>
+            <td>${alert.message}</td>
+            <td>
+                <span class="badge bg-${getSeverityClass(alert.severity)}">
+                    ${alert.severity.toUpperCase()}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-${alert.status === 'delivered' ? 'success' : 'warning'}">
+                    ${alert.status}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-info" onclick="viewAlertDetails('${alert.time}')">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="resendAlert('${alert.time}')">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getSeverityClass(severity) {
+    const classes = {
+        'low': 'success',
+        'medium': 'warning',
+        'high': 'danger',
+        'critical': 'dark'
+    };
+    return classes[severity] || 'secondary';
+}
+
+function loadAlertLogs() {
+    const logs = [
+        '2024-01-15 14:30:25 - INFO: Alert delivered to john_doe@email.com',
+        '2024-01-15 14:30:24 - INFO: SMS sent to +1234567890',
+        '2024-01-15 14:30:23 - INFO: Processing high priority alert',
+        '2024-01-15 14:25:10 - INFO: System alert generated',
+        '2024-01-15 14:15:45 - WARNING: Alert delivery pending for jane_smith'
+    ];
+
+    const logContainer = document.getElementById('alertLogs');
+    logContainer.innerHTML = logs.map(log => `
+        <div class="log-entry ${log.includes('WARNING') ? 'log-warning' : 'log-info'}">
+            ${log}
+        </div>
+    `).join('');
+}
+
+function setupAlertConfiguration() {
+    // Threshold slider
+    const thresholdSlider = document.getElementById('fraudThreshold');
+    const thresholdValue = document.getElementById('thresholdValue');
+    
+    thresholdSlider.addEventListener('input', function() {
+        thresholdValue.textContent = this.value + '%';
+    });
+
+    // Configuration form
+    document.getElementById('alertConfigForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAlertConfiguration();
+    });
+}
+
+function saveAlertConfiguration() {
+    const config = {
+        emailAlerts: document.getElementById('emailAlerts').checked,
+        smsAlerts: document.getElementById('smsAlerts').checked,
+        pushAlerts: document.getElementById('pushAlerts').checked,
+        fraudThreshold: document.getElementById('fraudThreshold').value,
+        alertFrequency: document.getElementById('alertFrequency').value,
+        templates: {
+            highRisk: document.getElementById('highRiskTemplate').value,
+            mediumRisk: document.getElementById('mediumRiskTemplate').value,
+            systemAlert: document.getElementById('systemAlertTemplate').value
+        }
+    };
+
+    // Save configuration
+    localStorage.setItem('alertConfig', JSON.stringify(config));
+    showAlert('Alert configuration saved successfully', 'success');
+}
+
+function sendManualAlert() {
+    const formData = new FormData(document.getElementById('createAlertForm'));
+    const alertData = {
+        users: document.getElementById('alertUsers').value,
+        severity: document.getElementById('alertSeverity').value,
+        channels: Array.from(document.getElementById('alertChannels').selectedOptions).map(opt => opt.value),
+        message: document.getElementById('alertMessage').value,
+        immediate: document.getElementById('immediateDelivery').checked
+    };
+
+    if (!alertData.message) {
+        showAlert('Please enter an alert message', 'warning');
+        return;
+    }
+
+    // Send alert
+    showAlert('Manual alert sent successfully', 'success');
+    $('#createAlertModal').modal('hide');
+    document.getElementById('createAlertForm').reset();
+    
+    // Refresh alerts
+    loadRecentAlerts();
+}
+
+function refreshAlerts() {
+    loadAlertStatistics();
+    loadRecentAlerts();
+    loadAlertLogs();
+    showAlert('Alerts refreshed', 'info');
+}
+
+function viewAlertDetails(alertTime) {
+    showAlert(`Viewing details for alert at ${alertTime}`, 'info');
+}
+
+function resendAlert(alertTime) {
+    if (confirm('Are you sure you want to resend this alert?')) {
+        showAlert(`Alert from ${alertTime} has been resent`, 'success');
+    }
+}
+
+// Load saved configuration
+document.addEventListener('DOMContentLoaded', function() {
+    const savedConfig = localStorage.getItem('alertConfig');
+    if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        document.getElementById('emailAlerts').checked = config.emailAlerts;
+        document.getElementById('smsAlerts').checked = config.smsAlerts;
+        document.getElementById('pushAlerts').checked = config.pushAlerts;
+        document.getElementById('fraudThreshold').value = config.fraudThreshold;
+        document.getElementById('thresholdValue').textContent = config.fraudThreshold + '%';
+        document.getElementById('alertFrequency').value = config.alertFrequency;
+        document.getElementById('highRiskTemplate').value = config.templates.highRisk;
+        document.getElementById('mediumRiskTemplate').value = config.templates.mediumRisk;
+        document.getElementById('systemAlertTemplate').value = config.templates.systemAlert;
+    }
+});
+</script>
+{% endblock %}

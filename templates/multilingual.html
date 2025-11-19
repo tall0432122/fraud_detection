@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres de Langue - FraudGuard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-language me-2"></i>Paramètres de Langue
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Langue actuelle -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Langue Actuelle</h5>
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-globe-americas fa-2x me-3"></i>
+                                    <div>
+                                        <strong>Langue sélectionnée :</strong>
+                                        {% if current_user.language == 'fr' %}
+                                        Français
+                                        {% else %}
+                                        English
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sélection de langue -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Choisir votre langue</h5>
+                            <p class="text-muted">Sélectionnez votre langue préférée pour l'interface</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card language-card {% if current_user.language == 'fr' %}border-primary{% endif %}" 
+                                         onclick="setLanguage('fr')" style="cursor: pointer;">
+                                        <div class="card-body text-center">
+                                            <div class="mb-3">
+                                                <i class="fas fa-flag fa-3x text-primary"></i>
+                                            </div>
+                                            <h5>Français</h5>
+                                            <p class="text-muted small">Interface en langue française</p>
+                                            {% if current_user.language == 'fr' %}
+                                            <span class="badge bg-success">Actuelle</span>
+                                            {% else %}
+                                            <button class="btn btn-outline-primary btn-sm">Sélectionner</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <div class="card language-card {% if current_user.language == 'en' %}border-primary{% endif %}" 
+                                         onclick="setLanguage('en')" style="cursor: pointer;">
+                                        <div class="card-body text-center">
+                                            <div class="mb-3">
+                                                <i class="fas fa-flag-usa fa-3x text-primary"></i>
+                                            </div>
+                                            <h5>English</h5>
+                                            <p class="text-muted small">English language interface</p>
+                                            {% if current_user.language == 'en' %}
+                                            <span class="badge bg-success">Current</span>
+                                            {% else %}
+                                            <button class="btn btn-outline-primary btn-sm">Select</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paramètres régionaux -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Paramètres Régionaux</h5>
+                            <p class="text-muted">Configurez les formats régionaux pour les dates, nombres et devises</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Format de date</label>
+                                    <select class="form-select">
+                                        <option value="dd/mm/yyyy">DD/MM/YYYY (Européen)</option>
+                                        <option value="mm/dd/yyyy">MM/DD/YYYY (US)</option>
+                                        <option value="yyyy-mm-dd">YYYY-MM-DD (ISO)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Format d'heure</label>
+                                    <select class="form-select">
+                                        <option value="24h">Format 24h (14:30)</option>
+                                        <option value="12h">Format 12h (2:30 PM)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Format des nombres</label>
+                                    <select class="form-select">
+                                        <option value="1,234.56">1,234.56 (International)</option>
+                                        <option value="1 234,56">1 234,56 (Français)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Devise par défaut</label>
+                                    <select class="form-select">
+                                        <option value="USD">USD - Dollar US</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                        <option value="XOF">XOF - Franc CFA</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setLanguage(language) {
+    window.location.href = '/set_language/' + language;
+}
+</script>
+
+<style>
+.language-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.language-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.language-card.border-primary {
+    border-color: #0d6efd !important;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+</style>
+{% endblock %}
